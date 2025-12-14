@@ -3,7 +3,7 @@ import os
 
 # Get the server URL from an environment variable, with a default for local development
 # Example: for production, set SERVER_URL to "https://your-app-name.onrender.com"
-server_url = os.getenv("SERVER_URL", "http://localhost:8000")
+server_url = "https://siam3310-vidsrc-streamer.hf.space"
 
 # Function to fetch movie details from IMDb using IMDbPY library
 def get_movie_details(imdb_id):
