@@ -1,15 +1,17 @@
 from imdb import Cinemagoer
-import requests
+import os
 
-ip="IP address of your server"
+# Get the server URL from an environment variable, with a default for local development
+# Example: for production, set SERVER_URL to "https://your-app-name.onrender.com"
+server_url = os.getenv("SERVER_URL", "http://localhost:8000")
 
 # Function to fetch movie details from IMDb using IMDbPY library
 def get_movie_details(imdb_id):
     ia = Cinemagoer()  # Use Cinemagoer class
     try:
         # Extract the IMDb ID without 'tt'
-        imdb_id = imdb_id[2:]
-        movie = ia.get_movie(imdb_id)
+        movie_id_number = imdb_id.strip().lstrip('t')
+        movie = ia.get_movie(movie_id_number)
         return movie
     except Exception as e:
         print(f"Error fetching movie details for IMDb ID {imdb_id}: {e}")
@@ -27,21 +29,23 @@ def create_playlist(movie_ids):
             movie_name = movie['title']
             genre = movie.get('genres', ['Unknown'])[0]
 
-            # Fetch TV logo from IMDb API
+            # Fetch TV logo from IMDb data
             tv_logo_url = movie.get('full-size cover url', '')
 
             # Adding entry to the playlist
-            playlist_content += f"#EXTINF:-1 tvg-id=\"{movie_name}\" tvg-logo=\"{tv_logo_url}\" group-title=\"{genre}\",{movie_name}\n"
-            playlist_content += f"http://{ip}/stream/{imdb_id}\n"
+            playlist_content += f'''#EXTINF:-1 tvg-id="{movie_name}" tvg-logo="{tv_logo_url}" group-title="{genre}",{movie_name}\n'''
+            playlist_content += f"{server_url}/stream/{imdb_id}\n"
             print(f"Added {movie_name} to playlist")
 
     # Writing to the playlist file
-    with open("playlist.m3u8", "w") as playlist_file:
+    with open("PlaylistGenerator/playlist.m3u8", "w", encoding="utf-8") as playlist_file:
         playlist_file.write(playlist_content)
 
 # Read movie ids from movie_list.txt
-with open("imdb_id.txt", "r") as file:
+with open("PlaylistGenerator/imdb_id.txt", "r") as file:
     movie_ids = [line.strip() for line in file.readlines()]
 
 # Create playlist.m3u8
 create_playlist(movie_ids)
+
+print(f"Playlist generated successfully at PlaylistGenerator/playlist.m3u8 with server URL: {server_url}")
